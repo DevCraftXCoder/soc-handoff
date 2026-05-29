@@ -6,7 +6,7 @@ A security operations handoff and audit reporting system built to the standards 
 
 ---
 
-Incident response without structured handoffs loses context. Audits without traceability lose accountability. This system solves both — producing reports that are complete at the time of generation, readable without tooling, and built on frameworks that define how serious organizations manage security events.
+Incident response without structured handoffs loses context. Audits without traceability lose accountability. This system solves both producing reports that are complete at the time of generation, readable without tooling, and built on frameworks that define how serious organizations manage security events.
 
 The reporting standard is grounded in **NIST SP 800-61** (incident handling), **MITRE ATT&CK** (adversary behavior mapping), **OWASP** (application security controls), and **CIS Controls v8**. These are the same frameworks used by federal agencies, financial institutions, and critical infrastructure operators.
 
