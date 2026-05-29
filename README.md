@@ -1,6 +1,6 @@
 # 3SIXTYCO. SOC Handoff Report System
 
-**Built by Jowey Pierre-Francois — 3SixtyCo.**
+**Built by DevxCoder — 3SixtyCo.**
 
 A security operations handoff and audit reporting system built to the standards used by national-level security organizations. Designed for analysts, engineers, and teams who need structured, verifiable, and transferable security posture documentation.
 
