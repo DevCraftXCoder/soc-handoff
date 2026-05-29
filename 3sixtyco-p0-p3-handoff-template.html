@@ -1,0 +1,1425 @@
+<!doctype html>
+<!--
+  3SIXTYCO. — Blank P0-P3 Handoff Report v1.0
+  ══════════════════════════════════════════════════════════════════════
+  Interactive weekly blank checklist. P0-P3 priority scoring system.
+  Design: 3SIXTYCO. Brand System v1.2 — Geist + JetBrains Mono, monochrome
+  ══════════════════════════════════════════════════════════════════════
+-->
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'nonce-3sixtyco-p0-p3-v1'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+  <title>3SIXTYCO. — P0-P3 Handoff Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — 3SIXTYCO. v1.2
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --bg:        #0A0A0A;
+  --bg-deep:   #050505;
+  --surface:   #141414;
+  --ink:       #FFFFFF;
+  --ink-muted: #FFFFFF;
+  --ink-faint: #C8C4BE;
+  --line:      #2A2A2A;
+  /* Status palette — functional only */
+  --p0:      #FF3B3B;
+  --p1:      #E07B00;
+  --p2:      #B89100;
+  --p3:      #595651;
+  --pass:    #4ADE80;
+  --p0-bg:   rgba(255,59,59,0.08);
+  --p1-bg:   rgba(224,123,0,0.08);
+  --p2-bg:   rgba(184,145,0,0.08);
+  --pass-bg: rgba(74,222,128,0.10);
+}
+[data-theme="light"] {
+  --bg:        #F5F2EC;
+  --bg-deep:   #FFFFFF;
+  --surface:   #FFFFFF;
+  --ink:       #0A0A0A;
+  --ink-muted: #595651;
+  --ink-faint: #9A968D;
+  --line:      #DDD7CB;
+}
+
+*,*::before,*::after { box-sizing: border-box; }
+html,body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Geist', sans-serif;
+  transition: background 0.3s, color 0.3s;
+  min-height: 100vh;
+  background-image:
+    linear-gradient(rgba(245,242,236,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245,242,236,0.018) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+[data-theme="light"] body {
+  background-image:
+    linear-gradient(rgba(10,10,10,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10,10,10,0.03) 1px, transparent 1px);
+}
+.shell { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+/* ═══════════════════════════════════════════════════════
+   3SIXTYCO. BRAND MARK — Animated loader (from v1.0)
+   ═══════════════════════════════════════════════════════ */
+.mark-loader {
+  display:inline-block; width:32px; height:32px;
+  color:var(--ink); --loader-duration:2.5s;
+}
+.mark-loader svg { width:100%; height:100%; display:block; overflow:visible; }
+.mark-loader .ring-spinner,
+.mark-loader .tick-spinner { transform-origin:100px 100px; transform-box:view-box; }
+.mark-loader .tick-frame   { transform-origin:100px 100px; transform-box:view-box; }
+.mark-loader .tick-frame.f1 { transform:rotate(0deg); }
+.mark-loader .tick-frame.f2 { transform:rotate(120deg); }
+.mark-loader .tick-frame.f3 { transform:rotate(240deg); }
+.mark-loader .tick-key      { transform-origin:100px 100px; transform-box:view-box; }
+.mark-loader .ring-spinner  { animation:tsc-spin-ring var(--loader-duration) cubic-bezier(0.4,0,0.2,1) infinite; }
+.mark-loader .tick-spinner  { animation:tsc-spin-tick var(--loader-duration) cubic-bezier(0.4,0,0.2,1) infinite; }
+.mark-loader .tick-key      { animation:tsc-key       var(--loader-duration) cubic-bezier(0.5,0,0.2,1) infinite; }
+@keyframes tsc-spin-ring { 0%{transform:rotate(0deg)} 40%{transform:rotate(-360deg)} 100%{transform:rotate(-360deg)} }
+@keyframes tsc-spin-tick { 0%{transform:rotate(0deg)} 40%{transform:rotate(360deg)}  100%{transform:rotate(360deg)}  }
+@keyframes tsc-key { 0%,45%{transform:translateY(0)} 60%,75%{transform:translateY(28px)} 90%,100%{transform:translateY(0)} }
+.mark-loader.paused .ring-spinner,
+.mark-loader.paused .tick-spinner,
+.mark-loader.paused .tick-key { animation-play-state:paused; }
+
+/* ═══════════════════════════════════════════════════════
+   PAGE HEADER
+   ═══════════════════════════════════════════════════════ */
+.head {
+  display:flex; justify-content:space-between; align-items:center;
+  padding-bottom:24px; border-bottom:1px solid var(--line);
+  margin-bottom:40px;
+}
+.head-id { display:flex; align-items:center; gap:14px; }
+.head-id .wordgroup { display:flex; flex-direction:column; gap:3px; }
+.head-id .wordmark { font-weight:700; font-size:17px; letter-spacing:0.06em; }
+.head-id .submark {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.25em; text-transform:uppercase; color:var(--ink-muted);
+}
+.head-controls { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.hbtn {
+  background:transparent; color:var(--ink); border:1px solid var(--line);
+  padding:6px 13px; font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:0.18em; text-transform:uppercase;
+  cursor:pointer; transition:background 0.12s, color 0.12s;
+  white-space:nowrap;
+}
+.hbtn:hover { background:var(--surface); }
+.hbtn.active { background:var(--ink); color:var(--bg); }
+.hbtn.danger { border-color:var(--p0); color:var(--p0); }
+.hbtn.danger:hover { background:var(--p0); color:#fff; }
+.week-chip {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.15em; text-transform:uppercase;
+  padding:6px 12px; border:1px solid var(--line); color:var(--ink-muted);
+  white-space:nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCORE PANEL
+   ═══════════════════════════════════════════════════════ */
+.score-panel {
+  display:grid; grid-template-columns:260px 1fr;
+  border:1px solid var(--line); background:var(--surface);
+  margin-bottom:40px;
+}
+.score-ring-col {
+  padding:40px 32px; border-right:1px solid var(--line);
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:14px;
+}
+.score-ring-wrap { position:relative; width:160px; height:160px; }
+.score-ring-wrap svg { width:100%; height:100%; transform:rotate(-90deg); }
+.score-center {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.score-num {
+  font-family:'Geist',sans-serif; font-weight:800;
+  font-size:48px; letter-spacing:-0.04em; line-height:1;
+  transition:color 0.4s;
+}
+.score-denom {
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  letter-spacing:0.15em; color:var(--ink-faint);
+}
+.score-grade {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.18em; text-transform:uppercase; text-align:center;
+  transition:color 0.4s; max-width:160px; line-height:1.4;
+}
+
+.score-meta-col { padding:36px 40px; display:flex; flex-direction:column; gap:24px; }
+.score-title { font-weight:800; font-size:26px; letter-spacing:-0.03em; margin-bottom:2px; }
+.score-date {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-muted);
+}
+
+/* Priority breakdown grid */
+.prio-grid {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--line);
+}
+.prio-cell { padding:14px 16px; border-right:1px solid var(--line); }
+.prio-cell:last-child { border-right:none; }
+.prio-label {
+  font-family:'JetBrains Mono',monospace; font-size:8px;
+  letter-spacing:0.3em; text-transform:uppercase; margin-bottom:8px;
+}
+.prio-count {
+  font-family:'JetBrains Mono',monospace; font-size:20px;
+  font-weight:700; letter-spacing:-0.02em; line-height:1;
+}
+.prio-count .of { font-size:11px; color:var(--ink-muted); font-weight:400; }
+.prio-bar { height:2px; background:var(--line); margin-top:10px; position:relative; overflow:hidden; }
+.prio-bar-fill { position:absolute; left:0; top:0; height:100%; transition:width 0.4s ease; }
+.prio-cell.c0 .prio-label  { color:var(--p0); }
+.prio-cell.c0 .prio-bar-fill { background:var(--p0); }
+.prio-cell.c1 .prio-label  { color:var(--p1); }
+.prio-cell.c1 .prio-bar-fill { background:var(--p1); }
+.prio-cell.c2 .prio-label  { color:var(--p2); }
+.prio-cell.c2 .prio-bar-fill { background:var(--p2); }
+.prio-cell.c3 .prio-label  { color:var(--ink-muted); }
+.prio-cell.c3 .prio-bar-fill { background:var(--ink-muted); }
+
+/* Blockers list */
+.blockers-label {
+  font-family:'JetBrains Mono',monospace; font-size:8px;
+  letter-spacing:0.3em; text-transform:uppercase; color:var(--ink-faint);
+  margin-bottom:10px;
+}
+.blockers-list { display:flex; flex-direction:column; gap:5px; max-height:108px; overflow:hidden; }
+.blocker-row {
+  display:flex; align-items:center; gap:8px;
+  padding:5px 10px; border:1px solid var(--line); background:var(--bg);
+}
+.blocker-row .br-badge {
+  font-family:'JetBrains Mono',monospace; font-size:8px;
+  letter-spacing:0.15em; font-weight:700; padding:2px 5px;
+  border:1px solid currentColor; flex-shrink:0;
+}
+.blocker-row .br-name { font-size:11px; color:var(--ink-muted); line-height:1.2; }
+.blocker-row.is-p0 .br-badge { color:var(--p0); }
+.blocker-row.is-p1 .br-badge { color:var(--p1); }
+.blockers-more {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  color:var(--ink-faint); padding:4px 10px;
+}
+.no-blockers {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.18em; color:var(--pass); padding:6px 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FILTER / TOOLBAR
+   ═══════════════════════════════════════════════════════ */
+.toolbar {
+  display:flex; gap:6px; align-items:center; margin-bottom:0;
+  flex-wrap:wrap; padding-bottom:24px;
+  border-bottom:1px solid var(--line); margin-bottom:24px;
+}
+.fgrp { display:flex; }
+.fbtn {
+  background:transparent; color:var(--ink-muted); border:1px solid var(--line);
+  padding:7px 14px; font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:0.18em; text-transform:uppercase;
+  cursor:pointer; margin-right:-1px; transition:all 0.12s; white-space:nowrap;
+}
+.fbtn:hover { color:var(--ink); background:var(--surface); z-index:1; }
+.fbtn.active { background:var(--ink); color:var(--bg); z-index:2; }
+.fbtn.fp0.active { background:var(--p0); border-color:var(--p0); color:#fff; }
+.fbtn.fp1.active { background:var(--p1); border-color:var(--p1); color:#fff; }
+.fbtn.fp2.active { background:var(--p2); border-color:var(--p2); color:#000; }
+.fbtn.fp3.active { color:var(--ink); background:var(--surface); }
+.search-box {
+  background:transparent; color:var(--ink); border:1px solid var(--line);
+  padding:7px 14px; font-family:'JetBrains Mono',monospace;
+  font-size:9px; letter-spacing:0.12em; outline:none; width:180px;
+  transition:border-color 0.12s;
+}
+.search-box::placeholder { color:var(--ink-faint); }
+.search-box:focus { border-color:var(--ink-muted); }
+.toolbar .spacer { flex:1; }
+.total-chip {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.15em; color:var(--ink-faint); white-space:nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CHECKLIST SECTIONS
+   ═══════════════════════════════════════════════════════ */
+.sections-wrap { margin-bottom:40px; }
+.cl-section {
+  border:1px solid var(--line);
+  border-bottom:none;
+}
+.cl-section:last-child { border-bottom:1px solid var(--line); }
+
+.cl-sec-head {
+  display:grid; grid-template-columns:1fr auto;
+  align-items:center; gap:24px;
+  padding:18px 24px; background:var(--surface);
+  border-bottom:1px solid var(--line);
+  cursor:pointer; user-select:none;
+  transition:background 0.12s;
+}
+.cl-sec-head:hover { background:var(--bg); }
+.cl-sec-info { display:flex; flex-direction:column; gap:3px; }
+.cl-sec-num {
+  font-family:'JetBrains Mono',monospace; font-size:8px;
+  letter-spacing:0.3em; text-transform:uppercase; color:var(--ink-faint);
+}
+.cl-sec-title { font-weight:700; font-size:15px; letter-spacing:-0.01em; }
+.cl-sec-right { display:flex; align-items:center; gap:18px; }
+.cl-sec-progress {
+  display:flex; align-items:center; gap:10px;
+}
+.cl-sec-pct {
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  letter-spacing:0.08em; color:var(--ink-muted); white-space:nowrap;
+}
+.cl-sec-pct .done-num { color:var(--ink); font-weight:500; }
+.sec-prog-bar { width:72px; height:2px; background:var(--line); position:relative; overflow:hidden; }
+.sec-prog-fill { position:absolute; left:0; top:0; height:100%; background:var(--pass); transition:width 0.3s; }
+.cl-sec-chevron {
+  font-size:14px; color:var(--ink-faint);
+  transition:transform 0.2s; line-height:1;
+}
+.cl-section.collapsed .cl-sec-chevron { transform:rotate(-90deg); }
+.cl-section.collapsed .cl-sec-head { border-bottom:none; }
+
+/* Animate body open/close using grid trick */
+.cl-sec-body { display:grid; grid-template-rows:1fr; transition:grid-template-rows 0.25s ease; }
+.cl-section.collapsed .cl-sec-body { grid-template-rows:0fr; }
+.cl-sec-inner { overflow:hidden; }
+
+/* ═══════════════════════════════════════════════════════
+   CHECKLIST ITEM ROW
+   ═══════════════════════════════════════════════════════ */
+.cl-item {
+  display:grid;
+  grid-template-columns:52px 62px 1fr 100px;
+  align-items:stretch;
+  border-bottom:1px solid var(--line);
+  min-height:60px;
+  transition:background 0.1s;
+}
+.cl-item:last-child { border-bottom:none; }
+.cl-item:hover { background:var(--surface); }
+.cl-item.is-done { opacity:0.45; }
+.cl-item.is-done .cl-name { text-decoration:line-through; color:var(--ink-muted); }
+.cl-item.is-hidden { display:none; }
+
+/* Checkbox cell */
+.cl-check-cell {
+  display:flex; align-items:center; justify-content:center;
+  border-right:1px solid var(--line); cursor:pointer;
+}
+.cl-check-cell input[type="checkbox"] {
+  appearance:none; -webkit-appearance:none;
+  width:15px; height:15px;
+  border:1.5px solid var(--ink-faint);
+  background:transparent; cursor:pointer;
+  position:relative; transition:border-color 0.15s, background 0.15s;
+  flex-shrink:0;
+}
+.cl-check-cell input[type="checkbox"]:checked {
+  background:var(--pass); border-color:var(--pass);
+}
+.cl-check-cell input[type="checkbox"]:checked::after {
+  content:''; position:absolute;
+  left:3px; top:0; width:5px; height:9px;
+  border:2px solid var(--bg-deep);
+  border-top:none; border-left:none;
+  transform:rotate(43deg);
+}
+
+/* Priority badge cell */
+.cl-prio-cell {
+  display:flex; align-items:center; justify-content:center;
+  border-right:1px solid var(--line);
+}
+.cl-prio-badge {
+  font-family:'JetBrains Mono',monospace; font-size:8px;
+  letter-spacing:0.18em; font-weight:700;
+  padding:3px 6px; border:1px solid currentColor;
+}
+.cl-prio-badge.p0 { color:var(--p0); background:var(--p0-bg); }
+.cl-prio-badge.p1 { color:var(--p1); background:var(--p1-bg); }
+.cl-prio-badge.p2 { color:var(--p2); background:var(--p2-bg); }
+.cl-prio-badge.p3 { color:var(--ink-faint); border-color:var(--line); }
+
+/* Content cell */
+.cl-content { padding:12px 18px; display:flex; flex-direction:column; gap:3px; justify-content:center; }
+.cl-name { font-size:13px; font-weight:500; letter-spacing:-0.005em; color:var(--ink); }
+.cl-desc { font-size:11px; color:var(--ink-faint); font-family:'JetBrains Mono',monospace; letter-spacing:0.01em; line-height:1.5; }
+.cl-ref  { font-size:9px;  color:var(--ink-faint); font-family:'JetBrains Mono',monospace; letter-spacing:0.05em; opacity:0.5; margin-top:2px; }
+.cl-name[contenteditable],
+.cl-desc[contenteditable],
+.cl-ref[contenteditable] {
+  outline:none;
+  border-radius:2px;
+  padding:2px 4px;
+  margin-left:-4px;
+}
+.cl-name[contenteditable]:focus,
+.cl-desc[contenteditable]:focus,
+.cl-ref[contenteditable]:focus {
+  background:var(--bg);
+  box-shadow:0 0 0 1px var(--line);
+}
+.cl-name[data-empty="true"]::before,
+.cl-desc[data-empty="true"]::before,
+.cl-ref[data-empty="true"]::before {
+  content:attr(data-placeholder);
+  color:var(--ink-faint);
+}
+.cl-name[data-empty="true"]::before { font-style:italic; }
+
+/* Status cell */
+.cl-status-cell {
+  display:flex; align-items:center; justify-content:center;
+  padding:0 14px; border-left:1px solid var(--line);
+}
+.cl-status {
+  font-family:'JetBrains Mono',monospace; font-size:8px;
+  letter-spacing:0.2em; text-transform:uppercase;
+  padding:4px 8px; border:1px solid currentColor; white-space:nowrap;
+}
+.cl-status.pass    { color:var(--pass);       border-color:var(--pass);       background:var(--pass-bg); }
+.cl-status.miss-p0 { color:var(--p0);         border-color:var(--p0);         background:var(--p0-bg);
+  animation:pulse-crit 2.2s ease-in-out infinite; }
+.cl-status.miss-p1 { color:var(--p1);         border-color:var(--p1);         background:var(--p1-bg); }
+.cl-status.miss-p2 { color:var(--p2);         border-color:var(--p2);         background:var(--p2-bg); }
+.cl-status.miss-p3 { color:var(--ink-faint);  border-color:var(--line); }
+@keyframes pulse-crit { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ═══════════════════════════════════════════════════════
+   SIGN-OFF SYSTEM
+   ═══════════════════════════════════════════════════════ */
+.divider-label{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--ink-faint);padding:8px 0 12px;
+  border-top:1px solid var(--line);margin-top:40px;margin-bottom:16px}
+.soff{display:grid;grid-template-columns:1fr 1fr 1fr;
+  border:1px solid var(--line);margin-bottom:48px}
+.soc{padding:24px;border-right:1px solid var(--line)}
+.soc:last-child{border-right:none}
+.sol{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+.sov{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink)}
+.sor{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-muted);margin-top:3px}
+.soln{border-bottom:1px solid var(--line);height:36px;margin-top:8px}
+.sov[contenteditable],.sor[contenteditable]{
+  outline:none;border-radius:2px;padding:2px 4px;margin-left:-4px;cursor:text}
+.sov[contenteditable]:focus,.sor[contenteditable]:focus{
+  background:var(--bg-deep);box-shadow:0 0 0 1px var(--pass)}
+.sov[data-empty="true"]::before,.sor[data-empty="true"]::before{
+  content:attr(data-placeholder);color:var(--ink-faint);pointer-events:none;font-style:italic}
+/* sign-off prompt bar */
+.soff-prompt{display:flex;align-items:center;justify-content:space-between;
+  border:1px solid var(--pass);background:rgba(74,222,128,.04);
+  padding:14px 24px;margin-bottom:1px;cursor:pointer;transition:background .12s}
+.soff-prompt:hover{background:rgba(74,222,128,.09)}
+.soff-prompt-text{display:flex;flex-direction:column;gap:3px}
+.soff-prompt-label{font-family:'JetBrains Mono',monospace;font-size:8px;
+  letter-spacing:.28em;text-transform:uppercase;color:var(--pass)}
+.soff-prompt-sub{font-size:12px;color:var(--ink-muted);font-family:'JetBrains Mono',monospace}
+.soff-prompt-cta{font-family:'JetBrains Mono',monospace;font-size:9px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--pass);
+  border:1px solid var(--pass);padding:6px 14px;white-space:nowrap}
+/* sign-off modal */
+.signoff-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;
+  display:none;align-items:center;justify-content:center}
+.signoff-overlay.open{display:flex}
+.signoff-modal{background:var(--bg);border:1px solid var(--pass);
+  padding:28px 32px;width:min(560px,95vw);display:flex;flex-direction:column;gap:16px}
+.signoff-modal-title{font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:.28em;text-transform:uppercase;color:var(--pass);font-weight:700}
+.signoff-modal-sub{font-size:12px;color:var(--ink-muted);font-family:'JetBrains Mono',monospace;line-height:1.6}
+.signoff-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.signoff-field{display:flex;flex-direction:column;gap:4px}
+.signoff-label{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-faint)}
+.signoff-input{background:var(--bg-deep);color:var(--ink);border:1px solid var(--line);
+  padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  outline:none;transition:border-color .12s}
+.signoff-input:focus{border-color:var(--pass)}
+.signoff-modal-btns{display:flex;gap:8px;justify-content:flex-end}
+
+/* ═══════════════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════════════ */
+.mono { font-family:'JetBrains Mono',monospace; }
+
+/* ═══════════════════════════════════════════════════════
+   PRINT
+   ═══════════════════════════════════════════════════════ */
+@media print {
+  body { background:#fff !important; color:#000 !important; }
+  .head-controls, .toolbar { display:none !important; }
+  .cl-section.collapsed .cl-sec-body { grid-template-rows:1fr !important; }
+  .cl-item.is-hidden { display:grid !important; }
+  .cl-section { break-inside:avoid; }
+  .score-panel { break-inside:avoid; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .score-panel { grid-template-columns:1fr; }
+  .score-ring-col { border-right:none; border-bottom:1px solid var(--line); }
+  .prio-grid { grid-template-columns:repeat(2,1fr); }
+  .prio-cell:nth-child(2) { border-right:none; }
+  .prio-cell:nth-child(3) { border-top:1px solid var(--line); }
+  .soff{grid-template-columns:1fr}
+  .soc{border-right:none;border-bottom:1px solid var(--line)}
+  .soc:last-child{border-bottom:none}
+  .cl-item { grid-template-columns:44px 56px 1fr 80px; }
+}
+@media (max-width: 600px) {
+  .shell { padding:20px 16px; }
+  .head { flex-direction:column; align-items:flex-start; gap:16px; }
+  .cl-item { grid-template-columns:44px 52px 1fr; }
+  .cl-status-cell { display:none; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROD QA MODAL
+   ═══════════════════════════════════════════════════════ */
+.qa-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.72); z-index:1000;
+  align-items:center; justify-content:center;
+}
+.qa-overlay.open { display:flex; }
+.qa-modal {
+  background:var(--bg); border:1px solid var(--line);
+  width:100%; max-width:560px; max-height:90vh; overflow-y:auto;
+}
+.qa-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 24px; border-bottom:1px solid var(--line);
+}
+.qa-title {
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  letter-spacing:0.28em; text-transform:uppercase; color:var(--ink);
+}
+.qa-close {
+  background:transparent; border:1px solid var(--line); color:var(--ink);
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.15em; padding:5px 10px; cursor:pointer;
+}
+.qa-close:hover { background:var(--surface); }
+.qa-verdict {
+  padding:24px; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:16px;
+}
+.qa-verdict-badge {
+  font-family:'JetBrains Mono',monospace; font-size:11px;
+  font-weight:700; letter-spacing:0.2em;
+  padding:8px 18px; border:2px solid currentColor; flex-shrink:0;
+}
+.qa-verdict-badge.pass { color:var(--pass); }
+.qa-verdict-badge.fail { color:var(--p0); animation:pulse-crit 2s ease-in-out infinite; }
+.qa-verdict-badge.warn { color:var(--p1); }
+.qa-verdict-text {
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  letter-spacing:0.08em; color:var(--ink); line-height:1.5;
+}
+.qa-checks { padding:0; }
+.qa-check {
+  display:grid; grid-template-columns:28px 1fr auto;
+  align-items:center; gap:12px;
+  padding:14px 24px; border-bottom:1px solid var(--line);
+}
+.qa-check:last-child { border-bottom:none; }
+.qa-check-icon {
+  font-family:'JetBrains Mono',monospace; font-size:11px;
+  font-weight:700; text-align:center;
+}
+.qa-check-icon.ok  { color:var(--pass); }
+.qa-check-icon.err { color:var(--p0); }
+.qa-check-icon.warn { color:var(--p1); }
+.qa-check-label { font-size:12px; color:var(--ink); letter-spacing:-0.005em; }
+.qa-check-note {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  color:var(--ink-faint); letter-spacing:0.08em; white-space:nowrap;
+}
+.qa-check-note.ok   { color:var(--pass); }
+.qa-check-note.err  { color:var(--p0); }
+.qa-check-note.warn { color:var(--p1); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE HEADER
+     ═══════════════════════════════════════════════════════ -->
+<header class="head">
+  <div class="head-id">
+    <!-- 3SIXTYCO. Animated Brand Mark -->
+    <div class="mark-loader">
+      <svg viewBox="0 0 200 200" aria-label="3SIXTYCO. mark">
+        <g class="ring-spinner">
+          <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor"
+            stroke-width="14" stroke-linecap="butt"
+            stroke-dasharray="115.21 10.47" transform="rotate(155 100 100)"/>
+        </g>
+        <g class="tick-spinner">
+          <g class="tick-frame f1"><g class="tick-key"><rect x="97.5" y="5" width="5" height="14" fill="currentColor"/></g></g>
+          <g class="tick-frame f2"><g class="tick-key"><rect x="97.5" y="5" width="5" height="14" fill="currentColor"/></g></g>
+          <g class="tick-frame f3"><g class="tick-key"><rect x="97.5" y="5" width="5" height="14" fill="currentColor"/></g></g>
+        </g>
+      </svg>
+    </div>
+    <div class="wordgroup">
+      <span class="wordmark">3SIXTYCO.</span>
+      <span class="submark">P0-P3 Handoff · Weekly</span>
+    </div>
+  </div>
+  <div class="head-controls">
+    <button class="hbtn" id="week-prev">◂ PREV</button>
+    <span class="week-chip" id="week-chip">—</span>
+    <button class="hbtn" id="week-next">NEXT ▸</button>
+    <button class="hbtn" id="missing-btn">SHOW MISSING</button>
+    <button class="hbtn" id="expand-btn">EXPAND ALL</button>
+    <button class="hbtn" id="collapse-btn">COLLAPSE ALL</button>
+    <button class="hbtn" id="print-btn">⬇ EXPORT</button>
+    <button class="hbtn" id="theme-btn">LIGHT</button>
+    <button class="hbtn" id="qa-btn">✓ PROD QA</button>
+    <button class="hbtn" id="signoff-btn" style="border-color:var(--pass);color:var(--pass)">✎ SIGN OFF</button>
+    <button class="hbtn danger" id="reset-btn">RESET</button>
+  </div>
+</header>
+
+<!-- SIGN-OFF MODAL -->
+<div class="signoff-overlay" id="signoff-overlay">
+  <div class="signoff-modal">
+    <div class="signoff-modal-title">✓ Report Complete — Sign Off</div>
+    <div class="signoff-modal-sub">Enter analyst details to sign the handoff. Saved to localStorage.</div>
+    <div class="signoff-grid">
+      <div class="signoff-field">
+        <div class="signoff-label">Analyst Name</div>
+        <input class="signoff-input" id="sf-name" type="text" placeholder="Full name" autocomplete="name"/>
+      </div>
+      <div class="signoff-field">
+        <div class="signoff-label">Role / Title</div>
+        <input class="signoff-input" id="sf-role" type="text" placeholder="Role / title"/>
+      </div>
+    </div>
+    <div class="signoff-modal-btns">
+      <button class="hbtn" id="sf-skip">SKIP</button>
+      <button class="hbtn" id="sf-save" style="border-color:var(--pass);color:var(--pass)">SIGN OFF</button>
+      <button class="hbtn" id="sf-save-export" style="border-color:var(--pass);color:var(--pass)">SIGN OFF &amp; EXPORT</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROD QA MODAL -->
+<div class="qa-overlay" id="qa-overlay">
+  <div class="qa-modal">
+    <div class="qa-header">
+      <span class="qa-title">Production Readiness — QA Check</span>
+      <button class="qa-close" id="qa-close">✕ CLOSE</button>
+    </div>
+    <div class="qa-verdict" id="qa-verdict"></div>
+    <div class="qa-checks" id="qa-checks"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCORE PANEL
+     ═══════════════════════════════════════════════════════ -->
+<div class="score-panel">
+  <!-- Score ring -->
+  <div class="score-ring-col">
+    <div class="score-ring-wrap">
+      <svg viewBox="0 0 160 160">
+        <!-- Track ring -->
+        <circle cx="80" cy="80" r="62" fill="none" stroke="var(--line)" stroke-width="6"/>
+        <!-- Inner decorative ring (3SIXTYCO. motif) -->
+        <circle cx="80" cy="80" r="44" fill="none" stroke="var(--line)" stroke-width="1"
+          stroke-dasharray="55 8.38" transform="rotate(0 80 80)" opacity="0.5"/>
+        <!-- Progress arc -->
+        <circle id="score-arc" cx="80" cy="80" r="62" fill="none"
+          stroke="var(--ink)" stroke-width="6" stroke-linecap="butt"
+          stroke-dasharray="0 389.56"
+          style="transition:stroke-dasharray 0.5s ease,stroke 0.4s;"/>
+      </svg>
+      <div class="score-center">
+        <div class="score-num" id="score-num">0</div>
+        <div class="score-denom">&nbsp;/ 100</div>
+      </div>
+    </div>
+    <div class="score-grade" id="score-grade">INITIALIZING…</div>
+  </div>
+
+  <!-- Score metadata -->
+  <div class="score-meta-col">
+    <div>
+      <div class="score-title">P0-P3 Handoff Report</div>
+      <div class="score-date" id="score-date">WEEK — · GENERATED —</div>
+    </div>
+
+    <!-- Priority breakdown -->
+    <div class="prio-grid">
+      <div class="prio-cell c0">
+        <div class="prio-label mono">P0 · Critical</div>
+        <div class="prio-count mono" id="p0-count">0<span class="of"> / 0</span></div>
+        <div class="prio-bar"><div class="prio-bar-fill" id="p0-fill" style="width:0%"></div></div>
+      </div>
+      <div class="prio-cell c1">
+        <div class="prio-label mono">P1 · High</div>
+        <div class="prio-count mono" id="p1-count">0<span class="of"> / 0</span></div>
+        <div class="prio-bar"><div class="prio-bar-fill" id="p1-fill" style="width:0%"></div></div>
+      </div>
+      <div class="prio-cell c2">
+        <div class="prio-label mono">P2 · Medium</div>
+        <div class="prio-count mono" id="p2-count">0<span class="of"> / 0</span></div>
+        <div class="prio-bar"><div class="prio-bar-fill" id="p2-fill" style="width:0%"></div></div>
+      </div>
+      <div class="prio-cell c3">
+        <div class="prio-label mono">P3 · Low</div>
+        <div class="prio-count mono" id="p3-count">0<span class="of"> / 0</span></div>
+        <div class="prio-bar"><div class="prio-bar-fill" id="p3-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Blockers list -->
+    <div>
+      <div class="blockers-label mono">↳ OPEN BLOCKERS THIS WEEK (P0 / P1)</div>
+      <div class="blockers-list" id="blockers-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TOOLBAR / FILTERS
+     ═══════════════════════════════════════════════════════ -->
+<div class="toolbar">
+  <div class="fgrp">
+    <button class="fbtn active" data-f="all">ALL</button>
+    <button class="fbtn fp0"    data-f="p0">P0</button>
+    <button class="fbtn fp1"    data-f="p1">P1</button>
+    <button class="fbtn fp2"    data-f="p2">P2</button>
+    <button class="fbtn fp3"    data-f="p3">P3</button>
+  </div>
+  <input class="search-box" id="search-box" type="text" placeholder="SEARCH ITEMS / NOTES…" autocomplete="off"/>
+  <div class="spacer"></div>
+  <span class="total-chip" id="total-chip">— items</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     CHECKLIST (dynamic)
+     ═══════════════════════════════════════════════════════ -->
+<div class="sections-wrap" id="sections-wrap"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SIGN-OFF FOOTER
+     ═══════════════════════════════════════════════════════ -->
+<div class="divider-label">▸ ANALYST SIGN-OFF</div>
+
+<!-- prompt bar -->
+<div class="soff-prompt" id="soff-prompt-bar">
+  <div class="soff-prompt-text">
+    <div class="soff-prompt-label">✎ Analyst Sign-Off Required</div>
+    <div class="soff-prompt-sub" id="soff-prompt-status">Enter your name and position to complete this handoff.</div>
+  </div>
+  <div class="soff-prompt-cta">SIGN OFF ▸</div>
+</div>
+
+<!-- sign-off cells -->
+<div class="soff">
+  <div class="soc" style="user-select:none;pointer-events:none;opacity:1">
+    <div class="sol">Made By</div>
+    <div class="sov">Devxcoder</div>
+    <div class="sor">SYSTEMS ARCHITECT · 3SIXTYCO.</div>
+    <div class="soln"></div>
+  </div>
+  <div class="soc">
+    <div class="sol">Signed Off By</div>
+    <div class="sov" id="sf-display-name" data-sf-field="name" data-placeholder="ANALYST NAME" data-empty="true"></div>
+    <div class="sor" id="sf-display-role" data-sf-field="role" data-placeholder="ROLE / TITLE" data-empty="true"></div>
+    <div class="soln"></div>
+  </div>
+  <div class="soc">
+    <div class="sol">Report fingerprint</div>
+    <div class="sov" id="report-hash" style="font-size:10px;word-break:break-all">—</div>
+    <div class="sol" style="margin-top:14px">Final Score</div>
+    <div class="sov" id="footer-score" style="font-size:18px;letter-spacing:-0.01em">0 / 100</div>
+    <div class="sol" style="margin-top:6px">Template</div>
+    <div class="sov" style="font-size:9px">3SIXTYCO. P0–P3 HANDOFF · V1</div>
+  </div>
+</div>
+
+</div><!-- /.shell -->
+
+<script nonce="3sixtyco-p0-p3-v1">
+/* ═══════════════════════════════════════════════════════
+   DATA MODEL
+   Blank reusable P0-P3 handoff rows.
+   ═══════════════════════════════════════════════════════ */
+const SECTIONS = [
+  { id:'p0', tag:'#P0', title:'P0 - Critical / Must Fix', items:[
+    { id:'p0-01', p:'p0', name:'', desc:'', ref:'' },
+    { id:'p0-02', p:'p0', name:'', desc:'', ref:'' },
+    { id:'p0-03', p:'p0', name:'', desc:'', ref:'' },
+    { id:'p0-04', p:'p0', name:'', desc:'', ref:'' },
+    { id:'p0-05', p:'p0', name:'', desc:'', ref:'' },
+    { id:'p0-06', p:'p0', name:'', desc:'', ref:'' },
+  ]},
+  { id:'p1', tag:'#P1', title:'P1 - High Priority', items:[
+    { id:'p1-01', p:'p1', name:'', desc:'', ref:'' },
+    { id:'p1-02', p:'p1', name:'', desc:'', ref:'' },
+    { id:'p1-03', p:'p1', name:'', desc:'', ref:'' },
+    { id:'p1-04', p:'p1', name:'', desc:'', ref:'' },
+    { id:'p1-05', p:'p1', name:'', desc:'', ref:'' },
+    { id:'p1-06', p:'p1', name:'', desc:'', ref:'' },
+  ]},
+  { id:'p2', tag:'#P2', title:'P2 - Medium Priority', items:[
+    { id:'p2-01', p:'p2', name:'', desc:'', ref:'' },
+    { id:'p2-02', p:'p2', name:'', desc:'', ref:'' },
+    { id:'p2-03', p:'p2', name:'', desc:'', ref:'' },
+    { id:'p2-04', p:'p2', name:'', desc:'', ref:'' },
+    { id:'p2-05', p:'p2', name:'', desc:'', ref:'' },
+    { id:'p2-06', p:'p2', name:'', desc:'', ref:'' },
+  ]},
+  { id:'p3', tag:'#P3', title:'P3 - Low Priority / Nice To Have', items:[
+    { id:'p3-01', p:'p3', name:'', desc:'', ref:'' },
+    { id:'p3-02', p:'p3', name:'', desc:'', ref:'' },
+    { id:'p3-03', p:'p3', name:'', desc:'', ref:'' },
+    { id:'p3-04', p:'p3', name:'', desc:'', ref:'' },
+    { id:'p3-05', p:'p3', name:'', desc:'', ref:'' },
+    { id:'p3-06', p:'p3', name:'', desc:'', ref:'' },
+  ]},
+];
+
+/* ═══════════════════════════════════════════════════════
+   CONSTANTS
+   ═══════════════════════════════════════════════════════ */
+const WEIGHTS = { p0:4, p1:3, p2:2, p3:1 };
+const RING_R = 62;
+const RING_C = 2 * Math.PI * RING_R; // 389.56
+const ITEM_IDS = new Set(SECTIONS.flatMap(section => section.items.map(item => item.id)));
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════ */
+const SK = '3sixtyco-p0-p3-blank-template-v1';
+let saved = {};
+try {
+  const parsed = JSON.parse(localStorage.getItem(SK) || '{}');
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) saved = parsed;
+} catch(e){}
+
+let checked   = new Set(Array.isArray(saved.checked) ? saved.checked.filter(id => ITEM_IDS.has(id)) : []);
+let itemText  = (saved.items && typeof saved.items === 'object' && !Array.isArray(saved.items)) ? saved.items : {};
+let weekOff   = Number.isInteger(saved.week) && Math.abs(saved.week) <= 520 ? saved.week : 0;
+let signoff   = (saved.signoff && typeof saved.signoff === 'object') ? { name: saved.signoff.name || '', role: saved.signoff.role || '' } : { name: '', role: '' };
+let filter    = 'all';
+let missOnly  = false;
+let searchQ   = '';
+
+/* ═══════════════════════════════════════════════════════
+   WEEK HELPERS
+   ═══════════════════════════════════════════════════════ */
+function getMonday(offset) {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - (day === 0 ? 6 : day - 1);
+  d.setDate(diff + offset * 7);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+function fmt(d, opts) { return d.toLocaleDateString('en-US', opts); }
+function weekLabel(off) {
+  const m = getMonday(off);
+  const f = new Date(m); f.setDate(f.getDate() + 6);
+  return `WK OF ${fmt(m,{month:'short',day:'numeric'})} – ${fmt(f,{month:'short',day:'numeric',year:'numeric'})}`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCORING
+   ═══════════════════════════════════════════════════════ */
+function calcScore() {
+  let max = 0, earned = 0;
+  const bp = { p0:{d:0,t:0}, p1:{d:0,t:0}, p2:{d:0,t:0}, p3:{d:0,t:0} };
+  SECTIONS.forEach(s => s.items.forEach(i => {
+    const w = WEIGHTS[i.p];
+    max += w; bp[i.p].t++;
+    if (checked.has(i.id)) { earned += w; bp[i.p].d++; }
+  }));
+  const score = max > 0 ? Math.round((earned / max) * 100) : 0;
+  return { score, bp, max, earned };
+}
+function scoreColor(s) {
+  if (s >= 90) return 'var(--pass)';
+  if (s >= 70) return 'var(--p2)';
+  if (s >= 50) return 'var(--p1)';
+  return 'var(--p0)';
+}
+function scoreGrade(s) {
+  if (s >= 95) return '✓ CLEARED FOR HANDOFF';
+  if (s >= 85) return '◐ GOOD — MINOR OPEN ITEMS';
+  if (s >= 70) return '◑ MEDIUM RISK — GAPS TO ADDRESS';
+  if (s >= 50) return '◒ HIGH RISK — P1s UNRESOLVED';
+  return '✗ BLOCKED — P0/P1 ITEMS OPEN';
+}
+function hashStr(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  return Math.abs(h).toString(16).toUpperCase().slice(0, 8);
+}
+function editableValue(item, field) {
+  return itemText[item.id]?.[field] ?? item[field] ?? '';
+}
+function blockerLabel(item) {
+  return editableValue(item, 'name').trim() || `${item.p.toUpperCase()} item ${item.id.slice(-2)}`;
+}
+function setEditableState(el) {
+  el.dataset.empty = el.textContent.trim() ? 'false' : 'true';
+}
+function setEditableValue(item, field, value) {
+  const clean = value.replace(/\u00a0/g, ' ').trim();
+  if (!itemText[item.id]) itemText[item.id] = {};
+  itemText[item.id][field] = clean;
+  save();
+}
+
+/* ═══════════════════════════════════════════════════════
+   UPDATE SCORE UI
+   ═══════════════════════════════════════════════════════ */
+function updateScore() {
+  const { score, bp } = calcScore();
+  // Ring arc
+  const arc = (score / 100) * RING_C;
+  const ring = document.getElementById('score-arc');
+  ring.setAttribute('stroke-dasharray', `${arc.toFixed(2)} ${RING_C.toFixed(2)}`);
+  ring.style.stroke = scoreColor(score);
+  // Numbers
+  const numEl = document.getElementById('score-num');
+  numEl.textContent = score;
+  numEl.style.color = scoreColor(score);
+  document.getElementById('score-grade').textContent = scoreGrade(score);
+  document.getElementById('score-grade').style.color = scoreColor(score);
+  document.getElementById('footer-score').textContent = `${score} / 100`;
+  // Priority cells
+  ['p0','p1','p2','p3'].forEach(p => {
+    const {d,t} = bp[p];
+    const el = document.getElementById(`${p}-count`);
+    el.textContent = '';
+    el.appendChild(document.createTextNode(String(d)));
+    const of = document.createElement('span');
+    of.className = 'of';
+    of.textContent = ` / ${t}`;
+    el.appendChild(of);
+    const pct = t > 0 ? (d/t)*100 : 0;
+    document.getElementById(`${p}-fill`).style.width = pct + '%';
+  });
+  // Blockers
+  const bl = document.getElementById('blockers-list');
+  const blockers = [];
+  SECTIONS.forEach(s => s.items.forEach(i => {
+    if (!checked.has(i.id) && (i.p === 'p0' || i.p === 'p1')) blockers.push(i);
+  }));
+  bl.textContent = '';
+  if (blockers.length === 0) {
+    const ok = document.createElement('div');
+    ok.className = 'no-blockers';
+    ok.textContent = '✓ NO OPEN P0/P1 ITEMS — CLEARED FOR HANDOFF';
+    bl.appendChild(ok);
+  } else {
+    blockers.slice(0,5).forEach(i => {
+      const row = document.createElement('div');
+      row.className = `blocker-row is-${i.p}`;
+      const badge = document.createElement('span');
+      badge.className = 'br-badge';
+      badge.textContent = i.p.toUpperCase();
+      const name = document.createElement('span');
+      name.className = 'br-name';
+      name.textContent = blockerLabel(i);
+      row.append(badge, name);
+      bl.appendChild(row);
+    });
+    if (blockers.length > 5) {
+      const more = document.createElement('div');
+      more.className = 'blockers-more';
+      more.textContent = `+${blockers.length-5} more open blockers…`;
+      bl.appendChild(more);
+    }
+  }
+  // Hash
+  const h = hashStr([...checked].sort().join('|') + score + JSON.stringify(itemText));
+  document.getElementById('report-hash').textContent = `#${h} · ${score}pts`;
+  // Auto sign-off prompt at 100%
+  if (score === 100 && !signoffAutoShown && !signoff.name) {
+    signoffAutoShown = true;
+    setTimeout(openSignoffModal, 400);
+  }
+  // Persist
+  save();
+}
+
+function save() {
+  try {
+    localStorage.setItem(SK, JSON.stringify({ checked:[...checked], items:itemText, week:weekOff, signoff }));
+  } catch(e){}
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER CHECKLIST
+   ═══════════════════════════════════════════════════════ */
+function render() {
+  const wrap = document.getElementById('sections-wrap');
+  wrap.textContent = '';
+  let visTotal = 0;
+
+  SECTIONS.forEach((sec, si) => {
+    const secDone  = sec.items.filter(i => checked.has(i.id)).length;
+    const secTotal = sec.items.length;
+    const pct      = secTotal > 0 ? (secDone / secTotal) * 100 : 0;
+
+    // Filter visible items
+    const vis = sec.items.filter(item => {
+      const fOk = filter === 'all' || item.p === filter;
+      const mOk = !missOnly || !checked.has(item.id);
+      const haystack = [
+        item.id,
+        item.p,
+        editableValue(item, 'name'),
+        editableValue(item, 'desc'),
+        editableValue(item, 'ref')
+      ].join(' ').toLowerCase();
+      const sOk = !searchQ || haystack.includes(searchQ);
+      return fOk && mOk && sOk;
+    });
+
+    if (vis.length === 0) return;
+    visTotal += vis.length;
+
+    const div = document.createElement('div');
+    div.className = 'cl-section';
+    div.id = 'sec-' + sec.id;
+
+    const head = document.createElement('div');
+    head.className = 'cl-sec-head';
+
+    const info = document.createElement('div');
+    info.className = 'cl-sec-info';
+    const num = document.createElement('span');
+    num.className = 'cl-sec-num mono';
+    num.textContent = `SECTION — ${String(si+1).padStart('02','0')} · ${sec.tag}`;
+    const title = document.createElement('span');
+    title.className = 'cl-sec-title';
+    title.textContent = sec.title;
+    info.append(num, title);
+
+    const right = document.createElement('div');
+    right.className = 'cl-sec-right';
+    const progress = document.createElement('div');
+    progress.className = 'cl-sec-progress';
+    const pctText = document.createElement('span');
+    pctText.className = 'cl-sec-pct mono';
+    const doneNum = document.createElement('span');
+    doneNum.className = 'done-num';
+    doneNum.id = `sec-done-${sec.id}`;
+    doneNum.textContent = secDone;
+    pctText.append(doneNum, document.createTextNode(` / ${secTotal}`));
+    const bar = document.createElement('div');
+    bar.className = 'sec-prog-bar';
+    const fill = document.createElement('div');
+    fill.className = 'sec-prog-fill';
+    fill.id = `sec-fill-${sec.id}`;
+    fill.style.width = `${pct}%`;
+    bar.appendChild(fill);
+    progress.append(pctText, bar);
+    const chev = document.createElement('span');
+    chev.className = 'cl-sec-chevron';
+    chev.textContent = '▾';
+    right.append(progress, chev);
+    head.append(info, right);
+
+    const body = document.createElement('div');
+    body.className = 'cl-sec-body';
+    const inner = document.createElement('div');
+    inner.className = 'cl-sec-inner';
+    vis.forEach(item => inner.appendChild(renderItem(item)));
+    body.appendChild(inner);
+    div.append(head, body);
+
+    // Toggle collapse
+    div.querySelector('.cl-sec-head').addEventListener('click', () => {
+      div.classList.toggle('collapsed');
+    });
+
+    // Checkbox listeners
+    div.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', e => {
+        const id = e.target.dataset.id;
+        const row = e.target.closest('.cl-item');
+        const p = row.dataset.p;
+        if (e.target.checked) { checked.add(id); row.classList.add('is-done'); }
+        else { checked.delete(id); row.classList.remove('is-done'); }
+
+        // Update status badge
+        const st = row.querySelector('.cl-status');
+        if (e.target.checked) { st.className = 'cl-status pass'; st.textContent = 'PASS'; }
+        else { st.className = `cl-status miss-${p}`; st.textContent = 'MISSING'; }
+
+        // Update section counter
+        const newDone = sec.items.filter(i => checked.has(i.id)).length;
+        const dEl = document.getElementById('sec-done-' + sec.id);
+        const fEl = document.getElementById('sec-fill-' + sec.id);
+        if (dEl) dEl.textContent = newDone;
+        if (fEl) fEl.style.width = ((newDone / sec.items.length) * 100) + '%';
+
+        // Hide if missOnly mode
+        if (missOnly && e.target.checked) row.classList.add('is-hidden');
+
+        updateScore();
+      });
+    });
+
+    div.querySelectorAll('[data-edit-field]').forEach(field => {
+      setEditableState(field);
+      field.addEventListener('input', e => {
+        const el = e.currentTarget;
+        setEditableState(el);
+        setEditableValue(
+          { id: el.dataset.id },
+          el.dataset.editField,
+          el.textContent || ''
+        );
+        updateScore();
+      });
+      field.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && e.currentTarget.dataset.editField !== 'desc') {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
+      });
+      field.addEventListener('paste', e => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertText', false, text);
+      });
+    });
+
+    wrap.appendChild(div);
+  });
+
+  document.getElementById('total-chip').textContent = `${visTotal} items`;
+  updateScore();
+}
+
+function renderItem(item) {
+  const done = checked.has(item.id);
+  const statusClass = done ? 'pass' : `miss-${item.p}`;
+  const statusText  = done ? 'PASS' : 'MISSING';
+  const row = document.createElement('div');
+  row.className = `cl-item ${done ? 'is-done' : ''}`;
+  row.dataset.id = item.id;
+  row.dataset.p = item.p;
+
+  const checkCell = document.createElement('label');
+  checkCell.className = 'cl-check-cell';
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.dataset.id = item.id;
+  input.checked = done;
+  checkCell.appendChild(input);
+
+  const prioCell = document.createElement('div');
+  prioCell.className = 'cl-prio-cell';
+  const prio = document.createElement('span');
+  prio.className = `cl-prio-badge ${item.p}`;
+  prio.textContent = item.p.toUpperCase();
+  prioCell.appendChild(prio);
+
+  const content = document.createElement('div');
+  content.className = 'cl-content';
+  const name = document.createElement('div');
+  name.className = 'cl-name';
+  name.contentEditable = 'true';
+  name.spellcheck = true;
+  name.dataset.id = item.id;
+  name.dataset.editField = 'name';
+  name.dataset.placeholder = `${item.p.toUpperCase()} item title`;
+  name.textContent = editableValue(item, 'name');
+  const desc = document.createElement('div');
+  desc.className = 'cl-desc';
+  desc.contentEditable = 'true';
+  desc.spellcheck = true;
+  desc.dataset.id = item.id;
+  desc.dataset.editField = 'desc';
+  desc.dataset.placeholder = 'Notes / acceptance criteria / owner';
+  desc.textContent = editableValue(item, 'desc');
+  const ref = document.createElement('div');
+  ref.className = 'cl-ref';
+  ref.contentEditable = 'true';
+  ref.spellcheck = false;
+  ref.dataset.id = item.id;
+  ref.dataset.editField = 'ref';
+  ref.dataset.placeholder = 'REF / LINK / TICKET';
+  ref.textContent = editableValue(item, 'ref');
+  content.append(name, desc, ref);
+
+  const statusCell = document.createElement('div');
+  statusCell.className = 'cl-status-cell';
+  const status = document.createElement('span');
+  status.className = `cl-status ${statusClass}`;
+  status.textContent = statusText;
+  statusCell.appendChild(status);
+
+  row.append(checkCell, prioCell, content, statusCell);
+  return row;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CONTROLS
+   ═══════════════════════════════════════════════════════ */
+// Priority filter
+document.querySelectorAll('.fbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filter = btn.dataset.f;
+    render();
+  });
+});
+
+// Search
+document.getElementById('search-box').addEventListener('input', e => {
+  searchQ = e.target.value.trim().toLowerCase();
+  render();
+});
+
+// Missing toggle
+document.getElementById('missing-btn').addEventListener('click', function() {
+  missOnly = !missOnly;
+  this.classList.toggle('active', missOnly);
+  this.textContent = missOnly ? 'SHOW ALL' : 'SHOW MISSING';
+  render();
+});
+
+// Week navigation
+function updateWeek() {
+  document.getElementById('week-chip').textContent = weekLabel(weekOff);
+  const m = getMonday(weekOff);
+  const f = new Date(m); f.setDate(f.getDate() + 6);
+  document.getElementById('score-date').textContent =
+    `${fmt(m,{month:'short',day:'numeric'})} – ${fmt(f,{month:'short',day:'numeric',year:'numeric'})} · GENERATED ${fmt(new Date(),{month:'short',day:'numeric',year:'numeric'})}`.toUpperCase();
+  save();
+}
+document.getElementById('week-prev').addEventListener('click', () => { weekOff--; updateWeek(); });
+document.getElementById('week-next').addEventListener('click', () => { weekOff++; updateWeek(); });
+
+// Expand / Collapse all
+document.getElementById('expand-btn').addEventListener('click', () => {
+  document.querySelectorAll('.cl-section').forEach(s => s.classList.remove('collapsed'));
+});
+document.getElementById('collapse-btn').addEventListener('click', () => {
+  document.querySelectorAll('.cl-section').forEach(s => s.classList.add('collapsed'));
+});
+
+// Theme toggle
+document.getElementById('theme-btn').addEventListener('click', function() {
+  const root = document.documentElement;
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  this.textContent = next === 'dark' ? 'LIGHT' : 'DARK';
+});
+
+// Export / Print
+document.getElementById('print-btn').addEventListener('click', () => {
+  document.querySelectorAll('.cl-section').forEach(s => s.classList.remove('collapsed'));
+  setTimeout(() => window.print(), 100);
+});
+
+// Reset
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('Reset ALL handoff rows and progress for this week? This cannot be undone.')) return;
+  checked.clear();
+  itemText = {};
+  signoff = { name: '', role: '' };
+  try { localStorage.removeItem(SK); } catch(e){}
+  render();
+  updateSignoffPrompt();
+});
+
+/* ═══════════════════════════════════════════════════════
+   SIGN-OFF
+   ═══════════════════════════════════════════════════════ */
+function updateSignoffPrompt() {
+  const bar    = document.getElementById('soff-prompt-bar');
+  const status = document.getElementById('soff-prompt-status');
+  const label  = bar.querySelector('.soff-prompt-label');
+  const cta    = bar.querySelector('.soff-prompt-cta');
+  if (signoff.name) {
+    status.textContent = 'Signed off: ' + signoff.name + (signoff.role ? ' · ' + signoff.role : '');
+    bar.style.borderColor = 'var(--ink-faint)'; bar.style.background = 'transparent';
+    label.textContent = '✓ Signed Off'; label.style.color = 'var(--ink-muted)';
+    cta.textContent = 'EDIT ▸';
+  } else {
+    status.textContent = 'Enter your name and position to complete this handoff.';
+    bar.style.borderColor = ''; bar.style.background = '';
+    label.textContent = '✎ Analyst Sign-Off Required'; label.style.color = '';
+    cta.textContent = 'SIGN OFF ▸';
+  }
+  // Update sign-off cell display (col 2)
+  document.querySelectorAll('[data-sf-field]').forEach(el => {
+    const val = signoff[el.dataset.sfField] || '';
+    el.textContent = val;
+    el.dataset.empty = val ? 'false' : 'true';
+  });
+}
+let signoffAutoShown = false;
+function openSignoffModal() {
+  document.getElementById('sf-name').value = signoff.name || '';
+  document.getElementById('sf-role').value = signoff.role || '';
+  document.getElementById('signoff-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('sf-name').focus(), 50);
+}
+function applySignoff() {
+  signoff.name = document.getElementById('sf-name').value.trim();
+  signoff.role = document.getElementById('sf-role').value.trim();
+  save();
+  document.getElementById('signoff-overlay').classList.remove('open');
+  updateSignoffPrompt();
+}
+document.getElementById('signoff-btn').addEventListener('click', openSignoffModal);
+document.getElementById('soff-prompt-bar').addEventListener('click', openSignoffModal);
+document.getElementById('sf-skip').addEventListener('click', () => document.getElementById('signoff-overlay').classList.remove('open'));
+document.getElementById('sf-save').addEventListener('click', applySignoff);
+document.getElementById('sf-save-export').addEventListener('click', () => { applySignoff(); setTimeout(() => window.print(), 100); });
+document.getElementById('signoff-overlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+
+/* ═══════════════════════════════════════════════════════
+   PROD QA CHECK
+   ═══════════════════════════════════════════════════════ */
+function runQA() {
+  const { score, bp } = calcScore();
+  const p0Total = bp.p0.t, p0Done = bp.p0.d;
+  const p1Total = bp.p1.t, p1Done = bp.p1.d;
+  const p2Total = bp.p2.t, p2Done = bp.p2.d;
+  const p3Total = bp.p3.t, p3Done = bp.p3.d;
+
+  // Count items that have no title entered
+  let untitled = 0;
+  SECTIONS.forEach(s => s.items.forEach(i => {
+    if (!(itemText[i.id]?.name || '').trim()) untitled++;
+  }));
+
+  const checks = [
+    {
+      label: 'All P0 (Critical) items resolved',
+      ok: p0Total > 0 ? p0Done === p0Total : null,
+      note: p0Total === 0 ? 'NO P0 ITEMS' : `${p0Done} / ${p0Total}`,
+      required: true
+    },
+    {
+      label: 'All P1 (High) items resolved',
+      ok: p1Total > 0 ? p1Done === p1Total : null,
+      note: p1Total === 0 ? 'NO P1 ITEMS' : `${p1Done} / ${p1Total}`,
+      required: true
+    },
+    {
+      label: 'P2 (Medium) items ≥ 80% resolved',
+      ok: p2Total === 0 ? null : (p2Done / p2Total) >= 0.8,
+      note: p2Total === 0 ? 'NO P2 ITEMS' : `${p2Done} / ${p2Total} (${Math.round((p2Done/(p2Total||1))*100)}%)`,
+      required: false
+    },
+    {
+      label: 'Overall score ≥ 85',
+      ok: score >= 85,
+      note: `${score} / 100`,
+      required: true
+    },
+    {
+      label: 'All checklist items have titles',
+      ok: untitled === 0,
+      note: untitled === 0 ? 'ALL TITLED' : `${untitled} UNTITLED`,
+      required: false
+    },
+    {
+      label: 'P3 (Low) items ≥ 50% resolved',
+      ok: p3Total === 0 ? null : (p3Done / p3Total) >= 0.5,
+      note: p3Total === 0 ? 'NO P3 ITEMS' : `${p3Done} / ${p3Total} (${Math.round((p3Done/(p3Total||1))*100)}%)`,
+      required: false
+    },
+  ];
+
+  // Verdict
+  const failed  = checks.filter(c => c.required && c.ok === false);
+  const warned  = checks.filter(c => !c.required && c.ok === false);
+  const verdict = failed.length > 0 ? 'fail' : warned.length > 0 ? 'warn' : 'pass';
+  const verdictText = {
+    pass: '✓ CLEARED FOR PRODUCTION — All critical and high items resolved, score threshold met.',
+    warn: '◐ CONDITIONAL — Required checks pass. Non-critical gaps remain.',
+    fail: `✗ BLOCKED — ${failed.length} required check${failed.length>1?'s':''} failing. Resolve before handoff.`
+  }[verdict];
+
+  // Render
+  const vEl = document.getElementById('qa-verdict');
+  vEl.textContent = '';
+  const badge = document.createElement('span');
+  badge.className = `qa-verdict-badge ${verdict}`;
+  badge.textContent = verdict.toUpperCase();
+  const text = document.createElement('span');
+  text.className = 'qa-verdict-text';
+  text.textContent = verdictText;
+  vEl.append(badge, text);
+
+  const cEl = document.getElementById('qa-checks');
+  cEl.textContent = '';
+  checks.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'qa-check';
+    const icon = document.createElement('span');
+    const noteClass = c.ok === null ? '' : c.ok ? 'ok' : (c.required ? 'err' : 'warn');
+    icon.className = `qa-check-icon ${c.ok === null ? '' : c.ok ? 'ok' : (c.required ? 'err' : 'warn')}`;
+    icon.textContent = c.ok === null ? '—' : c.ok ? '✓' : '✗';
+    const label = document.createElement('span');
+    label.className = 'qa-check-label';
+    label.textContent = c.label;
+    const note = document.createElement('span');
+    note.className = `qa-check-note ${noteClass}`;
+    note.textContent = c.note;
+    row.append(icon, label, note);
+    cEl.appendChild(row);
+  });
+
+  document.getElementById('qa-overlay').classList.add('open');
+}
+
+document.getElementById('qa-btn').addEventListener('click', runQA);
+document.getElementById('qa-close').addEventListener('click', () => {
+  document.getElementById('qa-overlay').classList.remove('open');
+});
+document.getElementById('qa-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+});
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════ */
+updateWeek();
+render();
+updateSignoffPrompt();
+</script>
+</body>
+</html>
