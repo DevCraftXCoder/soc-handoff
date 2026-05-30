@@ -80,26 +80,32 @@ This pipeline is production-verified against the DropStream project (a Cloudflar
 Scheduled job (Monday 09:00)
         |
         v
-safety-harness.mjs  (project test suite — N tests, PASS/FAIL stdout)
+safety-harness  (project test suite — N tests, PASS/FAIL stdout)
         |
         v
 harnessMap  (test name → control ID)
         |
         v
-Weighted score  W = { P0: 4, P1: 3, P2: 2, P3: 1 }
-score = round(earned / max * 100)
+FAILed controls → synthetic findings JSON  (severity derived from P0–P3 tier)
         |
         v
-Verdict  ≥95 GO · 85–94 REVIEW · 70–84 REVIEW · 50–69 ATTENTION · <50 BLOCK
+sic_to_soc.py  (SIC report generator)
+  --scan    <findings.json>
+  --project <name>
+  --score   <weighted 0–100>      # harness score passed as the week-0 snapshot
+  --output  <project-soc-ts.html>
         |
         v
-HTML report  (pre-signed, localStorage pre-seeded, opens ready to read)
+Canonical SOC report  (pre-signed, project-data JSON injected, week-over-week
+                       snapshots accumulated, opens ready to read)
         |
         v
 Discord  (rich embed + HTML file attached, week-over-week delta)
 ```
 
 The scoring formula and posture thresholds mirror the template's own `recalc()` and `sg()` functions exactly — the number in the Discord embed is the same number the analyst sees when they open the report.
+
+Routing the weekly report through `sic_to_soc.py` means the automated weekly report and any manual scan-driven report share the same template, the same output directory, and the same `project-data.snapshots` history array — so week-over-week posture is tracked in one place regardless of how the report was generated.
 
 ### Harness map
 
@@ -141,47 +147,47 @@ The embed verdict drives the message color: green for GO, amber for REVIEW, oran
 
 ### Setup
 
-**Requirements:** Node.js 20+, Bun (for TypeScript harness execution), a Discord webhook URL.
+**Requirements:** Node.js 20+, Bun (TypeScript harness execution), Python 3.10+ (SOC report generation via `sic_to_soc.py`), a Discord webhook URL.
 
 **Environment variables** (`.env` or system environment):
 
 ```
-DROPSTREAM_SOC_DISCORD_WEBHOOK=https://discord.com/api/webhooks/...
-SOC_ANALYST_NAME=Your Name
-SOC_ANALYST_ROLE=Your Role
+YOUR_PROJECT_SOC_DISCORD_WEBHOOK=https://discord.com/api/webhooks/...
 ```
 
 **Schedule** (Windows Task Scheduler):
 
 ```powershell
 # Run once to register — Monday 09:00 AM, runs as soon as possible if missed
-powershell -ExecutionPolicy Bypass -File scripts/register-dropstream-soc-task.ps1
+powershell -ExecutionPolicy Bypass -File scripts/register-soc-task.ps1
 ```
 
 **Manual run:**
 
 ```bash
-# Dry run — full pipeline except Discord POST (logs payload to console)
-node scripts/dropstream-weekly-soc.mjs --dry-run
+# Dry run — full pipeline except Discord POST (logs embed payload to console)
+node scripts/weekly-soc.mjs --dry-run
 
 # Full run — harness + report + Discord post
-node scripts/dropstream-weekly-soc.mjs
+node scripts/weekly-soc.mjs
 
 # One-time forced post (for QA or catch-up)
-node scripts/dropstream-weekly-soc.mjs --post-once
+node scripts/weekly-soc.mjs --post-once
 ```
 
-Reports are written to `_runs/soc-report-dropstream-YYYY-MM-DD.html`. Each report embeds a `<!--soc-score:N-->` meta comment at the top so the following week's run can compute the delta without opening the file.
+Reports are written to the configured output directory as `<project>-soc-<timestamp>.html`. Week-over-week posture history is stored inside the report's `project-data` JSON (`snapshots` array) — consecutive same-week scans deduplicate into one entry, cross-week runs accumulate automatically. No external state file is required.
 
 ### Adapting to another project
 
 1. Write a safety harness that prints `PASS <test name>` / `FAIL <test name>` lines to stdout
 2. Create a `harnessMap` linking each relevant test name to its control ID
 3. Update `CONTROLS` to match the target template's control list and priority tiers
-4. Point `TEMPLATE` at the project's blank SOC handoff HTML
+4. Configure `SIC_TO_SOC`, `SOC_TEMPLATE`, and output directory constants to point at your installation
 5. Set the webhook URL and schedule the runner
 
-The runner imports no framework dependencies — it is a single ESM script that reads one file and posts one HTTP request.
+**How FAILed controls become findings:** each FAILed control emits a finding whose severity is derived from the control's P0–P3 tier (`P0→critical`, `P1→high`, `P2→medium`, `P3→low`). `sic_to_soc.py` groups them into matching severity sections in the report. A clean week with zero failures produces a valid report with zero open findings.
+
+The runner itself imports no framework dependencies beyond Node.js built-ins and a child process for the harness. The only external runtime requirement is Python for the report generation step.
 
 ---
 
