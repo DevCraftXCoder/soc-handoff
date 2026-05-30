@@ -62,9 +62,28 @@ A weekly checklist with 24 blank rows across four priority tiers. Fill in your o
 
 ---
 
-### SOC Handoff Templates — Full Security Reports
+### SOC Handoff Template — Full Security Reports
 
-For structured incident response and security audit reporting mapped to NIST SP 800-61, MITRE ATT&CK, OWASP, and CIS Controls. See the full pipeline documentation in the [SIC integration repo](https://github.com/DevCraftXCoder/SIC).
+**`soc-handoff-template-blank.html`** — the production SOC report template used by the automated pipeline and the `/soc-report` skill.
+
+This template accepts a `project-data` JSON payload injected at build time. When opened in a browser it runs fully client-side — all state, sign-offs, notes, and evidence fields persist to localStorage, and the report can be handed off as a standalone HTML file.
+
+**Features:**
+
+| Feature | Detail |
+|---------|--------|
+| Score circle | Priority-weighted 0–100 live scoring ring — P0 failures penalise 4× a P3 failure |
+| P0 / P1 / P2 / P3 counters | Live verified/total counts per tier, updated as controls are checked |
+| Interactive sign-off | **✎ SIGN OFF** header button opens a modal — name, role, secondary engineer; auto-triggers at 100% score; **SIGN OFF & EXPORT** signs and prints in one click |
+| Editable signoff cells | Analyst name + role are inline-editable directly in the signoff section |
+| Sign-off prompt bar | Persistent clickable banner above the signoff block — shows completion status, flips to "✓ Signed Off" after signing |
+| Fingerprint | Report ID field auto-populated with project name, date, score, and harness result summary |
+| Growth delta | Controls added, attack coverage delta, open gaps, and active threat count populated from run data |
+| Week-over-week navigation | ◄ PREV / NEXT ► buttons navigate a rolling 12-week snapshot history |
+| Print tip | Export guidance banner appears on click — "Uncheck Headers and footers for a cleaner PDF" |
+| Analyst notes + evidence | Per-control notes and evidence fields, persisted to localStorage |
+| Dark-mode PDF | `print-color-adjust: exact` — dark theme renders correctly when exported to PDF |
+| Zero dependencies | Single HTML file, no server, no build step, any modern browser |
 
 ---
 
@@ -72,68 +91,9 @@ For structured incident response and security audit reporting mapped to NIST SP 
 
 The system supports fully automated weekly SOC report generation — no analyst input required at run time. A scheduled runner executes the project's safety harness, maps test results to controls, computes the weighted security score, generates a pre-signed HTML report, and delivers it to a Discord channel as a rich embed with the report file attached.
 
-This pipeline is production-verified against the DropStream project (a Cloudflare Workers edge application). The same pattern applies to any project with a structured test suite and a defined control-to-test mapping.
+See the [soc-report](https://github.com/DevCraftXCoder/soc-report) repository for the full automated pipeline documentation.
 
-### How it works
-
-```
-Scheduled job (Monday 09:00)
-        |
-        v
-safety-harness  (project test suite — N tests, PASS/FAIL stdout)
-        |
-        v
-harnessMap  (test name → control ID)
-        |
-        v
-FAILed controls → synthetic findings JSON  (severity derived from P0–P3 tier)
-        |
-        v
-sic_to_soc.py  (SIC report generator)
-  --scan    <findings.json>
-  --project <name>
-  --score   <weighted 0–100>      # harness score passed as the week-0 snapshot
-  --output  <project-soc-ts.html>
-        |
-        v
-Canonical SOC report  (pre-signed, project-data JSON injected, week-over-week
-                       snapshots accumulated, opens ready to read)
-        |
-        v
-Discord  (rich embed + HTML file attached, week-over-week delta)
-```
-
-The scoring formula and posture thresholds mirror the template's own `recalc()` and `sg()` functions exactly — the number in the Discord embed is the same number the analyst sees when they open the report.
-
-Routing the weekly report through `sic_to_soc.py` means the automated weekly report and any manual scan-driven report share the same template, the same output directory, and the same `project-data.snapshots` history array — so week-over-week posture is tracked in one place regardless of how the report was generated.
-
-### Harness map
-
-The harness map is a static dictionary that links each test name (as printed to stdout by the safety harness) to the control ID it covers in the SOC template. Controls not covered by automated tests remain in their default state. Controls covered by multiple tests take the lowest result — one FAIL overrides any other PASS for the same control.
-
-Example mapping:
-
-```js
-{
-  'roomState requires version 1':                    'dp03',
-  'roomState deduplicates tile UIDs':                'rt04',
-  'unsafe URL schemes are dropped or normalized':    'sp01',
-  'Incognito clears persistence and blocks recents': 'sp02',
-  'app source has no prompt/confirm regressions':    'rt11',
-  // ...
-}
-```
-
-Unmatched tests (tests that pass but have no control mapping) are logged as informational — they do not affect the score and do not indicate a configuration problem. They represent deeper unit tests that go beyond the SOC control surface.
-
-### Discord output
-
-Each weekly run posts one message to the configured webhook:
-
-- **Embed** — score, verdict, PASS/FAIL count, failed control names, week-over-week delta
-- **Attachment** — the full signed HTML report for the current week
-
-The embed verdict drives the message color: green for GO, amber for REVIEW, orange for ATTENTION, red for BLOCK. If the runner itself fails (harness crash, filesystem error, network error), an error embed is posted in place of the normal report so the failure is always visible in the channel.
+---
 
 ### Posture thresholds
 
@@ -145,49 +105,16 @@ The embed verdict drives the message color: green for GO, amber for REVIEW, oran
 | 50–69 | GAPS NEED WORK | ATTENTION |
 | < 50 | CRITICAL | BLOCK |
 
-### Setup
+---
 
-**Requirements:** Node.js 20+, Bun (TypeScript harness execution), Python 3.10+ (SOC report generation via `sic_to_soc.py`), a Discord webhook URL.
+## Frameworks Referenced
 
-**Environment variables** (`.env` or system environment):
-
-```
-YOUR_PROJECT_SOC_DISCORD_WEBHOOK=https://discord.com/api/webhooks/...
-```
-
-**Schedule** (Windows Task Scheduler):
-
-```powershell
-# Run once to register — Monday 09:00 AM, runs as soon as possible if missed
-powershell -ExecutionPolicy Bypass -File scripts/register-soc-task.ps1
-```
-
-**Manual run:**
-
-```bash
-# Dry run — full pipeline except Discord POST (logs embed payload to console)
-node scripts/weekly-soc.mjs --dry-run
-
-# Full run — harness + report + Discord post
-node scripts/weekly-soc.mjs
-
-# One-time forced post (for QA or catch-up)
-node scripts/weekly-soc.mjs --post-once
-```
-
-Reports are written to the configured output directory as `<project>-soc-<timestamp>.html`. Week-over-week posture history is stored inside the report's `project-data` JSON (`snapshots` array) — consecutive same-week scans deduplicate into one entry, cross-week runs accumulate automatically. No external state file is required.
-
-### Adapting to another project
-
-1. Write a safety harness that prints `PASS <test name>` / `FAIL <test name>` lines to stdout
-2. Create a `harnessMap` linking each relevant test name to its control ID
-3. Update `CONTROLS` to match the target template's control list and priority tiers
-4. Configure `SIC_TO_SOC`, `SOC_TEMPLATE`, and output directory constants to point at your installation
-5. Set the webhook URL and schedule the runner
-
-**How FAILed controls become findings:** each FAILed control emits a finding whose severity is derived from the control's P0–P3 tier (`P0→critical`, `P1→high`, `P2→medium`, `P3→low`). `sic_to_soc.py` groups them into matching severity sections in the report. A clean week with zero failures produces a valid report with zero open findings.
-
-The runner itself imports no framework dependencies beyond Node.js built-ins and a child process for the harness. The only external runtime requirement is Python for the report generation step.
+| Framework | Application in reports |
+|-----------|----------------------|
+| NIST SP 800-61 | Incident lifecycle (detection → containment → recovery → lessons) |
+| MITRE ATT&CK | Attack technique mapping in `attackMapping[]` fields |
+| OWASP Top 10 | Application security control categories |
+| CIS Controls v8 | Maturity stage model and control prioritization |
 
 ---
 
